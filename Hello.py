@@ -13,39 +13,46 @@
 # limitations under the License.
 
 import streamlit as st
+import openai
+openai.api_key = st.secrets["OPENAI_KEY"]
 from streamlit.logger import get_logger
 
 LOGGER = get_logger(__name__)
 
+def openai_completion(prompt):
+    response = openai.Completion.create(
+      model="text-davinci-003",
+      prompt=prompt,
+      max_tokens=150,
+      temperature=0.5
+    )
+    return response['choices'][0]['text']
+
+def openai_image(prompt):
+    response = openai.Image.create(
+      prompt=prompt,
+      n=1,
+      size="256x256"
+    )
+    image_url = response['data'][0]['url']
+    return image_url
 
 def run():
     st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
+      page_title="OpenAI",
+      page_icon="✨"
     )
+    st.title("📄 GPT 🏜 Streamlit")
 
-    st.write("# Welcome to Streamlit! 👋")
+    input_text = st.text_area("Please enter text here... 🙋",height=50)
+    chat_button = st.button("Do the Magic! ✨")
 
-    st.sidebar.success("Select a demo above.")
-
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
-
+    if chat_button and input_text.strip() != "":
+        with st.spinner("Loading...💫"):
+            openai_answer = openai_completion(input_text)
+            st.success(openai_answer)
+    else:
+        st.warning("Please enter something! ⚠")
 
 if __name__ == "__main__":
     run()
